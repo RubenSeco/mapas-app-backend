@@ -1,20 +1,41 @@
+const Markers = require("./markers");
+
 class Sockets {
-    constructor(io) {
-        this.io = io;
-        this.socketEvents();
-    }
+  constructor(io) {
+    this.io = io;
 
-    socketEvents() {
-        // On connection
-        this.io.on('connection', (socket) => {
+    this.markers = new Markers();
 
-            // Escuchar evento: mensaje-to-server
-            socket.on('msg-to-server', (data) => {
-                console.log(data);
-                this.io.emit('msg-from-server', data);
-            });
-        });
-    }
+    this.socketEvents();
+  }
+
+  socketEvents() {
+    // On connection
+    this.io.on('connection', (socket) => {
+
+      console.log("Cliente conectado");
+
+      socket.emit("markers-active", this.markers.active);
+
+      socket.on("marker-new", (marker) => {
+
+        this.markers.addMarker(marker);
+        socket.broadcast.emit("marker-new", marker);
+
+
+      });
+
+      socket.on("marker-update", (marker) => {
+
+        this.markers.updateMarker(marker);
+        socket.broadcast.emit("marker-update", marker);
+      })
+
+
+
+
+    });
+  }
 
 
 }
